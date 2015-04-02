@@ -1,0 +1,13 @@
+extends layout
+block content
+    form(method="post", action="/coordinator")
+        label(for="url") Coordinator
+        input(type="text",name="url")
+        input(type="submit",value="Submit")
+    
+    label(for="query") Query
+    textarea(name="query")
+    button(onclick="submitQuery()") Submit
+    br
+    div(id="status")
+    
