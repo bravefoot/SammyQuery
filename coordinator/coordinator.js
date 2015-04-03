@@ -44,21 +44,15 @@ app.use(cookieParser());
 To register a new microservice with the coordinator
 send a POST request to "/register" with the body containing the json object:
 {
-    id: "some unique identifier"
-    host:"www.whatever.com"
-    port:"99"
+    url: a url to access the service with
 }
 */
-/*
-TODO:
-Check for id uniqueness
-*/
 app.post('/register',function(req,res){
-    var id = req.body.id;
+    //generate your own id
+    var id = uuid.v1();
     var service = {
         'id': id,
-        'host': req.body.host,
-        'port': req.body.port
+        'url':req.body.url
     }
     registered_services.push(service);
     registered_ids.push(id);
@@ -78,7 +72,7 @@ app.get('/query',function(req,res){
     var query = req.body.query;
     var broadcast = new BroadcastManager(function(){res.send(202)}, function(){res.send(400)});
     registered_services.forEach(function(registree){
-        var url = "http://"+registree.host+":"+registree.port;
+        var url = "http://"+registree.url+"/query";
         request.post(url, {json:req.body.query},function(err, response, body){
           if(response.statusCode == 202){
             broadcast.update(registree.id, "OK");
