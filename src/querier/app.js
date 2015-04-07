@@ -32,6 +32,7 @@ io.on('connection',function(socket){
 });
 
 // view engine setup
+app.set('port', parseInt(process.argv[2]))
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -76,8 +77,8 @@ app.use(function(err, req, res, next) {
     });
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(app.get('port'), function(){
+  console.log('listening on ' + app.get('port'));
 });
 
 module.exports = app;
