@@ -4,8 +4,9 @@ USER="ec2-user"; export USER
 HOME="/home/$USER"; export HOME
 OPT_DIR="${HOME}/opt"
 NVM_DIR="${OPT_DIR}/nvm"
-REBOOT_SCRIPT="${HOME}/server/reboot.sh"
-UPDATE_SCRIPT="${HOME}/server/update.sh"
+REPO_DIR="${HOME}/SammyQuery"
+REBOOT_SCRIPT="${REPO_DIR}/reboot.sh"
+UPDATE_SCRIPT="${REPO_DIR}/update.sh"
 REBOOT_CRON="@reboot ${REBOOT_SCRIPT} >> /tmp/reboot.log 2>&1"
 UPDATE_CRON="* * * * * ${UPDATE_SCRIPT} >> /tmp/update.log 2>&1"
 

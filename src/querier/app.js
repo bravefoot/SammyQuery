@@ -15,7 +15,7 @@ var io = require('socket.io')(http);
 io.on('connection',function(socket){
     console.log("socket connected");
     socket.on('query', function(query){
-        request.get("http://localhost:8888"+"/query", {json:{sender: "http://localhost:3000", query:query}}, function(err,response,body){
+        request.get("http://localhost:3081"+"/query", {json:{sender: "http://localhost:3080", query:query}}, function(err,response,body){
             if(err){
               console.log(err);
             }
