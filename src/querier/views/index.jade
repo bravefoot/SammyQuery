@@ -1,12 +1,14 @@
 extends layout
 block content
     form(method="post", action="/coordinator")
-        label(for="url") Coordinator
+        label(for="url") Coordinator <br />
         input(type="text",name="url")
+        <br />
         input(type="submit",value="Submit")
-    
-    label(for="query") Query
+    <br />
+    label(for="query") Query <br />
     textarea(name="query")
+    <br />
     button(onclick="submitQuery()") Submit
     br
     div(id="status")
