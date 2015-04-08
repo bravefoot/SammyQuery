@@ -83,14 +83,10 @@ app.get('/query',function(req,res){
     });
 });
     
-app.get('/query/:id', function(req, res){
-    var body = queries[req.param('id')].solution(function(err,answer){
-        if(err){
-            res.send(400);
-        } else {
-            res.send(200, answer);
-        }
-    })    
+app.post('/response', function(req, res){
+    res.send(200);
+    var url = 'http://'+queries[req.body.id].sender+'/response'+;
+    request.post(url, {json:req.body},function(err,response,body){});
 });
      
 
