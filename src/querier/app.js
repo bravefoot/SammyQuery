@@ -6,22 +6,26 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var request= require('request');
+var uuid = require('node-uuid');
 
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+request.post("http://localhost:3081"+"/register", {json:{url:"localhost:3080"}},function(err,response,body){});
 
 io.on('connection',function(socket){
     console.log("socket connected");
     socket.on('query', function(query){
-        request.get("http://localhost:3081"+"/query", {json:{sender: "http://localhost:3080", query:query}}, function(err,response,body){
+        var q = JSON.parse(query)
+        q.id = uuid.v1();
+        request.get("http://localhost:3081"+"/query", {json:{sender: "http://localhost:3080", query:JSON.parse(query)}}, function(err,response,body){
             if(err){
               console.log(err);
             }
             console.log(response.statusCode);
-            if(response.statusCode == 202){
-              socket.send('statusMessage', "Your query may be completable"); 
+            if(response.statusCode == '202'){
+              io.emit('statusMessage', "Your query may be completable"); 
             } else {
                 console.log("sending status message");
                 io.emit('statusMessage', "Your query cannot be completed"); 
@@ -44,6 +48,24 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.post("/query",function(req,res){
+    if(req.body.query.type == "dummy"){
+        res.send(202);
+        request.post("http://localhost:3081/response",{json:{id:req.body.query.id,response:{status:200,data:["Shamlamadingdon"]}}},function(err,response,body){});
+    } else {
+        res.send(400);
+    }
+});
+app.post("/response", function(req,res){
+    console.log(JSON.stringify(req.body.response.data));
+    if(req.body.response.status == 200){
+        io.emit('statusMessage', "Your query was completed");
+        io.emit('statusMessage', JSON.stringify(req.body.response.data));
+    } else {
+        io.emit('statusMessage', "Your query could not be completed");
+    }
+    res.sendStatus(200);
+});
 app.use('/', routes);
 
 // catch 404 and forward to error handler

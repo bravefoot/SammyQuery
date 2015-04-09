@@ -67,13 +67,13 @@ query: we're still figuring the speifics, but it better have an id
 }
 */
 app.get('/query',function(req,res){
-    console.log("query received");
+    console.log(req.body.query.id);
     queries[req.body.query.id] = {sender: req.body.sender};
-    var query = req.body.query;
+    var q = req.body.query;
     var broadcast = new BroadcastManager(function(){res.send(202)}, function(){res.send(400)});
     registered_services.forEach(function(registree){
         var url = "http://"+registree.url+"/query";
-        request.post(url, {json:req.body.query},function(err, response, body){
+        request.post({url: url, body:{"query": q}, json:true},function(err, response, body){
           if(response.statusCode == 202){
             broadcast.update(registree.id, "OK");
           } else {
@@ -85,7 +85,8 @@ app.get('/query',function(req,res){
     
 app.post('/response', function(req, res){
     res.send(200);
-    var url = 'http://'+queries[req.body.id].sender+'/response'+;
+    console.log(queries[req.body.id].sender);
+    var url = queries[req.body.id].sender+'/response';
     request.post(url, {json:req.body},function(err,response,body){});
 });
      
