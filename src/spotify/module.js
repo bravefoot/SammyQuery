@@ -28,7 +28,7 @@ app.post('/query',function(req,res){
     }
 });
 
-var topSongsHandler = function(req,res){
+var topSongsHandler = function(req){
     var spotifyUrl ="http://charts.spotify.com/api/tracks/most_streamed/global/daily/latest";
     var topSongs=[];
     request.get(spotifyUrl, function(err, response, body){
