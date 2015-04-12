@@ -44,7 +44,7 @@ var topSongsHandler = function(req){
         }
         var responseFinal = {"id": req.body.id, "query":req.body.query, "data": topSongs};
         request.post("http://localhost:3081/response").json(responseFinal);
-        console.log(JSON.stringify(responseFinal));
+        //console.log(JSON.stringify(responseFinal));
     });
 }
 
