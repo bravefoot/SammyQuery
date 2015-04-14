@@ -43,14 +43,16 @@ app.post('/response', function(req, res){
   console.log('\n\n/response %j\n\n', req.body)
   res.status(202).end()
 
-  var query = req.body,
+  var query = openQueries[req.body.id],
       rootId = queryTree[query.id]
 
   delete queryTree[query.id]
 
-  if(query.status >= 300){
-    finalizeQuery(query.status, rootId)
+  if(query.status && query.status >= 300){
+    finalizeQuery(req.body.status, rootId)
   }else{
+    query.data.length = 0
+    query.data.push(req.body.data[0])
     handleQuery(query, rootId)
   }
 })
@@ -121,7 +123,7 @@ var queryAmazon = function(info){
 var puntQuery = function(query){
   var rootId = 0
   console.log('\n\nPUNTING QUERY %j\n\n', query)
-  request.get({
+  request.post({
       url: coordinatorUrl + '/query',
       body: lodash.merge(query, {sender: moduleUrl}),
       json: true},
