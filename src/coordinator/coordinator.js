@@ -56,9 +56,21 @@ app.post('/register',function(req,res){
         'id': id,
         'url':req.body.url
     }
-    registered_services.push(service);
-    registered_ids.push(id);
-    res.send(200);
+    var alreadyRegistered = false;
+    registered_services.forEach(function(ser){
+        if(ser.url == service.url) {
+            alreadyRegistered = true;
+        }
+    });
+    if(!alreadyRegistered) {
+        registered_services.push(service);
+        registered_ids.push(id);
+        res.send(200);
+    } else {
+        res.send(400);
+    }
+    
+    
 });
 
 /*
