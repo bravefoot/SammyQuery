@@ -1,11 +1,15 @@
 var express = require('express'),
     request = require('request'),
     lodash = require('lodash'),
-    uuid = require('node-uuid')
+    uuid = require('node-uuid'),
+    bodyParser = require('body-parser'),
+    logger = require("morgan")
+
+var amazon = require('./amazon')
 
 var app = express(),
     port = parseInt(process.argv[2]) || 3082,
-    coordinator = 'localhost:3081/register'
+    coordinatorUrl = 'http://localhost:3081'
 
 var validQueries = {
   commerce: true,
@@ -13,7 +17,12 @@ var validQueries = {
   book: true
 },
     openQueries = {},
-    queryTree = {}
+    queryTree = {},
+    registered = false
+
+app.use(logger('dev'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.post('/query', function(req, res){
   var id = 0
@@ -21,7 +30,7 @@ app.post('/query', function(req, res){
   if(validQueries[req.body.query]){
     res.status(202).end()
     id = req.body.id
-    openQueries[id] = lodash.copyDeep(req.body)
+    openQueries[id] = lodash.cloneDeep(req.body)
     handleQuery(openQueries[id], id)
   }else{
     res.status(400).end()
@@ -44,11 +53,15 @@ app.post('/response', function(req, res){
 })
 
 app.listen(port, function(){
-  console.log('Listening on port: ' + port)
-  var msg = {url: 'localhost:3082', id: uuid.v1()}
-  request.post({url: coordinator, body: msg, json: true}, function(err, response, body){
-    if(err) throw new Error('Amazon module: could not register with ' + coordinator)
-    else console.log('Amazon module: registered with ' + coordinator)
+  console.log('Amazon module listening on port: ' + port)
+  var msg = {url: 'localhost:3082'}
+  request.post({url: coordinatorUrl + '/register', body: msg, json: true}, function(err, response, body){
+    if(err){
+      console.log('Amazon module: could not register with ' + coordinatorUrl + ' Error: %j', err)
+    }else{
+      console.log('Amazon module: registered with ' + coordinatorUrl)
+      registered = true
+    }
   })
 })
 
@@ -73,8 +86,26 @@ var handleQuery = function(query, rootId){
   }
 }
 
+/*
+This code would actually query amazon for item attributes. However, their terms of use didn't let
+us use the API for this purpose so we had to hardcode a solution in the meantime.
+var queryAmazon = function(info, callback){
+  amazon.execute('ItemSearch', {
+    SearchIndex: info.category,
+    Keywords: info.track_name,
+    ResponseGroup: 'ItemAttributes'
+  }, function(err, results){
+    if(err){
+      console.log(err)
+    }else{
+      callback(results)
+    }
+  })
+}
+*/
+
 var queryAmazon = function(info){
-  result = {}
+  var result = {}
 
   switch(info.category){
     case 'song':
@@ -90,9 +121,9 @@ var queryAmazon = function(info){
 var puntQuery = function(query){
   var rootId = 0
 
-  request.post({url: coordinator + '/query', body: query, json: true}, function(err, response, body){
+  request.post({url: coordinatorUrl + '/query', body: query, json: true}, function(err, response, body){
     if(err){
-      console.log('Amazon module: error punting query ' + query + ' to ' + coordinator)
+      console.log('Amazon module: error punting query ' + query + ' to ' + coordinatorUrl)
     }
 
     if(response.status >= 300){
@@ -106,8 +137,10 @@ var puntQuery = function(query){
 var finalizeQuery = function(status, rootId){
   var query = openQueries[rootId]
   query.status = status
-  request.post({url: coordinator + '/response', body: query, json: true}, function(err, response, body){
-    if(err) console.log('Amazon module: failure submitting query: ' + rootId + ' response to: ' + coordinator)
+  console.log(query)
+  if(!registered) return
+  request.post({url: coordinatorUrl + '/response', body: query, json: true}, function(err, response, body){
+    if(err) console.log('Amazon module: failure submitting query: ' + rootId + ' response to: ' + coordinatorUrl)
   })
   delete openQueries[rootId]
 }
