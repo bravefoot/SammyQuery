@@ -68,7 +68,7 @@ sender: the url of the sender
 query: we're still figuring the speifics, but it better have an id
 }
 */
-app.get('/query',function(req,res){
+app.post('/query',function(req,res){
     console.log(req.body.id);
     var sende = req.body.sender;
     if(sende.indexOf('http') != 0){

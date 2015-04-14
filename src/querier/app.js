@@ -20,7 +20,7 @@ io.on('connection',function(socket){
         var q = JSON.parse(query)
         q.id = uuid.v1();
         q.sender = "http://localhost:3080";
-        request.get("http://localhost:3081"+"/query", {json:q}, function(err,response,body){
+        request.post("http://localhost:3081"+"/query", {json:q}, function(err,response,body){
             if(err){
               console.log(err);
             }
