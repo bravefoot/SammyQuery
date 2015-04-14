@@ -70,7 +70,11 @@ query: we're still figuring the speifics, but it better have an id
 */
 app.get('/query',function(req,res){
     console.log(req.body.id);
-    queries[req.body.id] = {sender: req.body.sender};
+    var sende = req.body.sender;
+    if(sende.indexOf('http') != 0){
+        sende = "http://"+sende;
+    }
+    queries[req.body.id] = {sender: sende};
     var q = req.body;
     var broadcast = new BroadcastManager(function(){res.send(202)}, function(){res.send(400)});
     registered_services.forEach(function(registree){
