@@ -19,7 +19,8 @@ io.on('connection',function(socket){
     socket.on('query', function(query){
         var q = JSON.parse(query)
         q.id = uuid.v1();
-        request.get("http://localhost:3081"+"/query", {json:{sender: "http://localhost:3080", query:JSON.parse(query)}}, function(err,response,body){
+        q.sender = "http://localhost:3080";
+        request.get("http://localhost:3081"+"/query", {json:q}, function(err,response,body){
             if(err){
               console.log(err);
             }
@@ -51,19 +52,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post("/query",function(req,res){
     if(req.body.query.type == "dummy"){
         res.send(202);
+        //Do yo logic
         request.post("http://localhost:3081/response",{json:{id:req.body.query.id,response:{status:200,data:["Shamlamadingdon"]}}},function(err,response,body){});
     } else {
         res.send(400);
     }
 });
 app.post("/response", function(req,res){
-    console.log(JSON.stringify(req.body.response.data));
-    if(req.body.response.status == 200){
+    console.log(JSON.stringify(req.body));
         io.emit('statusMessage', "Your query was completed");
-        io.emit('statusMessage', JSON.stringify(req.body.response.data));
-    } else {
-        io.emit('statusMessage', "Your query could not be completed");
-    }
+        io.emit('statusMessage', JSON.stringify(req.body.data));
     res.sendStatus(200);
 });
 app.use('/', routes);

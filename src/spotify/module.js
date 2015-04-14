@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+
 app.post('/query',function(req,res){
     
     console.log(req.body.id);
@@ -56,4 +57,10 @@ app.post('/response', function(req, res){
 
 http.createServer(app).listen(app.get('port'), function(){
    console.log('Express server listening on port ' + app.get('port'));
+    var coordinator = "http://localhost:3081/register";
+    var msg = {url: 'localhost:3083', id: uuid.v1()};
+    request.post({url: coordinator, body: msg, json: true}, function(err, response, body){
+        if(err) throw new Error('Spotify module: could not register with ' + coordinator)
+        else console.log('Spotify module: registered with ' + coordinator)
+    });
  });

@@ -14,6 +14,7 @@ var app = express();
 
 var BroadcastManager = function(okCallback, noCallback){
     var results = [];
+    var sent = false;
     if(registered_ids.length == 0){
         noCallback();
         return;
@@ -23,12 +24,13 @@ var BroadcastManager = function(okCallback, noCallback){
     });
     this.update = function(id, status){
       results[registered_ids.indexOf(id)] = status;
-        if(results.indexOf("") == -1){
+        if(results.indexOf("") == -1 && !sent){
             if(results.indexOf("OK") == -1){
               noCallback();
             } else {
               okCallback();
             }
+            sent = true;
         }
     }
 };
@@ -67,13 +69,13 @@ query: we're still figuring the speifics, but it better have an id
 }
 */
 app.get('/query',function(req,res){
-    console.log(req.body.query.id);
-    queries[req.body.query.id] = {sender: req.body.sender};
-    var q = req.body.query;
+    console.log(req.body.id);
+    queries[req.body.id] = {sender: req.body.sender};
+    var q = req.body;
     var broadcast = new BroadcastManager(function(){res.send(202)}, function(){res.send(400)});
     registered_services.forEach(function(registree){
         var url = "http://"+registree.url+"/query";
-        request.post({url: url, body:{"query": q}, json:true},function(err, response, body){
+        request.post(url, {json:q},function(err, response, body){
           if(response.statusCode == 202){
             broadcast.update(registree.id, "OK");
           } else {
