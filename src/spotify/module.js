@@ -18,8 +18,8 @@ app.use(cookieParser());
 
 app.post('/query',function(req,res){
     
-    console.log(req.body.id);
-    if(req.body.query == 'top songs'){      
+    console.log('Spotify /query: %s', req.body.id);
+    if(req.body.query == 'top songs'){
         res.sendStatus(202);
         topSongsHandler(req);
     }
