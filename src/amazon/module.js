@@ -9,7 +9,8 @@ var amazon = require('./amazon')
 
 var app = express(),
     port = parseInt(process.argv[2]) || 3082,
-    coordinatorUrl = 'http://localhost:3081'
+    coordinatorUrl = 'http://localhost:3081',
+    moduleUrl = 'localhost:' + port
 
 var validQueries = {
   commerce: true,
@@ -54,7 +55,7 @@ app.post('/response', function(req, res){
 
 app.listen(port, function(){
   console.log('Amazon module listening on port: ' + port)
-  var msg = {url: 'localhost:3082'}
+  var msg = {url: moduleUrl}
   request.post({url: coordinatorUrl + '/register', body: msg, json: true}, function(err, response, body){
     if(err){
       console.log('Amazon module: could not register with ' + coordinatorUrl + ' Error: %j', err)
@@ -121,7 +122,11 @@ var queryAmazon = function(info){
 var puntQuery = function(query){
   var rootId = 0
 
-  request.post({url: coordinatorUrl + '/query', body: query, json: true}, function(err, response, body){
+  request.post({
+      url: coordinatorUrl + '/query',
+      body: lodash.merge(query, {sender: moduleUrl}),
+      json: true},
+      function(err, response, body){
     if(err){
       console.log('Amazon module: error punting query ' + query + ' to ' + coordinatorUrl)
     }
