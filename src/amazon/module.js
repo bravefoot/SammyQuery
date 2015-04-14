@@ -26,18 +26,21 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.post('/query', function(req, res){
   var id = 0
-
+  console.log('/query, body: %j', req.body)
   if(validQueries[req.body.query]){
+    console.log('\n\nCAN HANDLE QUERY\n\n')
     res.status(202).end()
     id = req.body.id
     openQueries[id] = lodash.cloneDeep(req.body)
     handleQuery(openQueries[id], id)
   }else{
+    console.log('\n\nCANNOT HANDLE QUERY\n\n')
     res.status(400).end()
   }
 })
 
 app.post('/response', function(req, res){
+  console.log('\n\n/response %j\n\n', req.body)
   res.status(202).end()
 
   var query = req.body,
@@ -117,7 +120,7 @@ var queryAmazon = function(info){
 
 var puntQuery = function(query){
   var rootId = 0
-
+  console.log('\n\nPUNTING QUERY %j\n\n', query)
   request.get({
       url: coordinatorUrl + '/query',
       body: lodash.merge(query, {sender: moduleUrl}),
@@ -136,7 +139,7 @@ var puntQuery = function(query){
 }
 
 var finalizeQuery = function(status, rootId){
-  console.log('\n\nFINALIZING QUERY: %d\n\n', rootId)
+  console.log('\n\nFINALIZING QUERY: %s\n\n', rootId)
   var query = openQueries[rootId]
   query.status = status
   request.post({url: coordinatorUrl + '/response', body: query, json: true}, function(err, response, body){
