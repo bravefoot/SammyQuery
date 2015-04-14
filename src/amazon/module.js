@@ -18,8 +18,7 @@ var validQueries = {
   book: true
 },
     openQueries = {},
-    queryTree = {},
-    registered = false
+    queryTree = {}
 
 app.use(logger('dev'))
 app.use(bodyParser.json())
@@ -61,7 +60,6 @@ app.listen(port, function(){
       console.log('Amazon module: could not register with ' + coordinatorUrl + ' Error: %j', err)
     }else{
       console.log('Amazon module: registered with ' + coordinatorUrl)
-      registered = true
     }
   })
 })
@@ -108,12 +106,10 @@ var queryAmazon = function(info, callback){
 var queryAmazon = function(info){
   var result = {}
 
-  switch(info.category){
-    case 'song':
-      result.price = 1.29
-      break
-    default:
-      break
+  if(info.track_name){
+    result.track_price = 1.29
+  }else if(info.book_name){
+    result.book_price = 1.29
   }
 
   return result
@@ -122,7 +118,7 @@ var queryAmazon = function(info){
 var puntQuery = function(query){
   var rootId = 0
 
-  request.post({
+  request.get({
       url: coordinatorUrl + '/query',
       body: lodash.merge(query, {sender: moduleUrl}),
       json: true},
@@ -140,10 +136,9 @@ var puntQuery = function(query){
 }
 
 var finalizeQuery = function(status, rootId){
+  console.log('\n\nFINALIZING QUERY: %d\n\n', rootId)
   var query = openQueries[rootId]
   query.status = status
-  console.log(query)
-  if(!registered) return
   request.post({url: coordinatorUrl + '/response', body: query, json: true}, function(err, response, body){
     if(err) console.log('Amazon module: failure submitting query: ' + rootId + ' response to: ' + coordinatorUrl)
   })
