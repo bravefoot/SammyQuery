@@ -20,17 +20,17 @@ var BroadcastManager = function(okCallback, noCallback){
         return;
     }
     registered_ids.forEach(function(id){
-        results.push[""];
+        results.push(1);
     });
+    
     this.update = function(id, status){
       results[registered_ids.indexOf(id)] = status;
-        if(results.indexOf("") == -1 && !sent){
+        if(results.indexOf(1) == -1){
             if(results.indexOf("OK") == -1){
               noCallback();
             } else {
               okCallback();
             }
-            sent = true;
         }
     }
 };
@@ -104,6 +104,7 @@ app.post('/query',function(req,res){
 app.post('/response', function(req, res){
     res.send(200);
     console.log(queries[req.body.id].sender);
+    console.log(req.body);
     var url = queries[req.body.id].sender+'/response';
     request.post(url, {json:req.body},function(err,response,body){});
 });
